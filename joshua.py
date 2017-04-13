@@ -1,7 +1,11 @@
 # My first Python program
 # Author: Robert Becker
 # Date: April 11, 2017
-# Purpose: Random displays and string manipulation
+# Purpose: Random displays and string manipulation using user defined functions, for and while loops, exception, if/elif
+
+# Establish 2 strings then concatonate and capitalize first letters and print
+# Execute my function to calculate length of each string and compare to len function for each string, should be the same
+# Call another function to reverse the entire string and slice the backwards string based on skip count which is passed to function
 
 def mainline():
 
@@ -30,7 +34,7 @@ def mainline():
 
 def strlen(countstr):
 
-	# string index starts at 0, not 1
+	# string index starts at 0, not 1. loop until IndexError (end of string)
 	i = 0
 
 	while True:
@@ -38,14 +42,13 @@ def strlen(countstr):
 		try:
 	 		string1 = countstr[i]
 		except IndexError as whyme:
-	 		# print('String error due to:',whyme)
 	 		return (i)
 		else:
 			i = i + 1
 
 def backwards(reverseme,skipchar):
 
-	# creates a string with characters reversed and
+	# creates a string with characters reversed and a sliced version of same based on passed parameter
 	newme = ""
 	newmeskip = ""
 	l = strlen(reverseme)
