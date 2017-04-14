@@ -1,11 +1,11 @@
 # My first Python program
 # Author: Robert Becker
 # Date: April 11, 2017
-# Purpose: Random displays and string manipulation using user defined functions, for and while loops, exception, if/elif
+# Purpose: String manipulation using user defined functions, tuples, for and while loops, exception, if/elif
 
 # Establish 2 strings then concatonate and capitalize first letters and print
 # Execute my function to calculate length of each string and compare to len function for each string, should be the same
-# Call another function to reverse the entire string and slice the backwards string based on skip count which is passed to function
+# Call another function to reverse the entire string and slice the backwards string based on skip count passed to function
 
 def mainline():
 
@@ -28,9 +28,10 @@ def mainline():
 	print('Length of game string:  ',strlen(game_str),len(game_str))
 	print('Length of hello string: ',strlen(hello_str),len(hello_str))
 
-	# call function to reverse hello_string with every other byte
-	rev_string = backwards(hello_str,3.2)
-	print(rev_string)
+	# call function to reverse hello_string with all bytes and a second with every nth byte
+	rev_tuple = backwards(hello_str,3.2)
+	for rt in rev_tuple:
+		print(rt)
 
 def strlen(countstr):
 
@@ -41,30 +42,30 @@ def strlen(countstr):
 
 		try:
 	 		string1 = countstr[i]
-		except IndexError as whyme:
+	 		i = i + 1				# this could be done under else: instead
+		except IndexError as whyme:	# whyme contains the error that occurred
 	 		return (i)
-		else:
-			i = i + 1
 
 def backwards(reverseme,skipchar):
 
 	# creates a string with characters reversed and a sliced version of same based on passed parameter
-	newme = ""
-	newmeskip = ""
+	backstr = ""
+	backstrskip = ""
 	l = strlen(reverseme)
+
 	if skipchar < 0 or skipchar > l:
 		skipchar = 1
 	elif skipchar != int(skipchar):
 		skipchar = int(skipchar)
 
-	# loop thru string and create reverse string plus skip string
+	# slice thru string and create reverse string plus skip string
 	for i in range(l):
-		newme = reverseme[i] + newme
+		backstr = reverseme[i] + backstr
 		if i % skipchar == 0:
-			newmeskip = reverseme[i] + newmeskip
+			backstrskip = reverseme[i] + backstrskip
 
-	# print the entire string backwards then return desired result
-	print(newme)
-	return(newmeskip)
+	# store both backward strings in a tuple and return the tuple to the assignment statement
+	newtuple = (backstr, backstrskip)
+	return(newtuple)
 
 mainline()
