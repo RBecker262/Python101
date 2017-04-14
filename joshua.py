@@ -65,7 +65,7 @@ def backwards(reverseme,skipchar):
 			backstrskip = reverseme[i] + backstrskip
 
 	# store both backward strings in a tuple and return the tuple to the assignment statement
-	newtuple = (backstr, backstrskip)
-	return(newtuple)
+	backtuple = (backstr, backstrskip)
+	return(backtuple)
 
 mainline()

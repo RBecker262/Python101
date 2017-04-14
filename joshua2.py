@@ -44,7 +44,7 @@ def mainline():
 
 	# Open output Future Champs file, loop through future champs list and write each entry to file
 	# I did not need to add the \n at the end of the record because the AL Champs input already had the newline character at the end of each input string
-	Cubsbeatfile = open('../DataFiles/FutureChampFile.txt', 'w')
+	Cubsbeatfile = open('../DataFiles/FutChampFile.txt', 'w')
 
 	for y in futurelist:
 		Cubsbeatfile.write(y)
