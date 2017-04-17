@@ -18,7 +18,7 @@ from stringstuff import strlen, backwards
 
 # establish strings
 name_str = "greetings professor falken!"
-game_str = 'would you like to play a game?'
+game_str = 'shall we play a game?'
 hello_str = name_str + ' ' + game_str
 
 # print original strings
