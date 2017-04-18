@@ -51,3 +51,6 @@ filehandler.openfile()
 
 # call recursive function to parse json, pass dictionary and top level 1
 parsfunc.dictlevel(dictdata, 1, filehandler)
+
+# close output file
+filehandler.closefile()

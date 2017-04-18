@@ -36,5 +36,5 @@ def dictlevel(indict, inlevel, fileio):
         else:
             # print output showing first 20 bytes of dictionary value
             dictvalue = outputstr + str(indict[dictkey])[:20]
-            print(outputstr)
+            print(dictvalue)
             fileio.writefile(dictvalue+"\n")
