@@ -1,5 +1,5 @@
 """
-My Second Awesome Python Program
+My Second Awesome Python Module
 Author: Robert Becker
 Date: April 11, 2017
 Purpose: To highlight all Cubs World Series Championsips past and future

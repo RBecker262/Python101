@@ -1,5 +1,5 @@
 """
-My first Python Function Library
+My First Python Function Library
 Author: Robert Becker
 Date: April 11, 2017
 Purpose: Functions to count and manipulate strings
