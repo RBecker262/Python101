@@ -1,2 +1,20 @@
-# Python101
-Spring 2017 Python Mentorship - initial lessons getting familiar with Python
+ChiPy Spring 2017 Mentorship - Getting familiar with Python
+
+Module Index
+———————————-
+joshua.py	Produces several interesting variations of the famous line…
+		Greetings Professor Falken. Shall we play a game?
+
+cubswin.py	Produces a list of past and future Cubs World Championships
+		Cubs will have beaten every AL team by 2029 and win 14 WS in a row
+
+stringstuff.py	Function library for the above modules
+		strlen - returns the length of a string
+		backwards - returns a tuple with two backward strings
+		beatstr - returns a string based on the year passed to the function
+
+parsdict.py	Main module to parse a JSON dictionary and print all keys and values
+
+parsfunc.py	Function library for parsdict.py
+		dictlevel - recursive function to parse current level of dictionary
+
