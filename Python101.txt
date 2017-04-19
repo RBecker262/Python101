@@ -17,4 +17,6 @@ parsdict.py	Main module to parse a JSON dictionary and print all keys and values
 
 parsfunc.py	Function library for parsdict.py
 		dictlevel - recursive function to parse current level of dictionary
+		listlevel - recursive function to parse current level of list
+		* The 2 functions can recursively call each other
 
