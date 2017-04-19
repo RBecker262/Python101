@@ -45,13 +45,13 @@ def dictlevel(indict, dlevel, fileio):
     # get the list of dictionary keys at the current level
     keylist = list(indict.keys())
 
-    # loop thru each key at the current level
+    # loop thru each dictionary key at the current level
     for dictkey in keylist:
 
         # create output string showing level and current dictionary key
         outputstr = 'Level ' + str(dlevel) + ' Key=' + dictkey + ' '
 
-        # test if current key is a nested dictionary
+        # test if current value is a nested dictionary
         if isinstance(indict[dictkey], dict):
             # write output to indicate beginning of nested dictionary
             dictvalue = outputstr + 'SubDictionary--Begin'
@@ -63,7 +63,8 @@ def dictlevel(indict, dlevel, fileio):
             # write output to indicate end of nested dictionary
             dictvalue = outputstr + 'SubDictionary--End'
             fileio.writefile(dictvalue+"\n")
-        # test if current key is a list
+
+        # test if current value is a list
         elif isinstance(indict[dictkey], list):
             # write output to indicate beginning of list
             dictvalue = outputstr + 'List--Begin'
@@ -75,6 +76,8 @@ def dictlevel(indict, dlevel, fileio):
             # write output to indicate end of list
             dictvalue = outputstr + 'List--End'
             fileio.writefile(dictvalue+"\n")
+
+        # no dictionary, no list, must have a value
         else:
             # write output to show value from dictionary key
             dictvalue = outputstr + 'Value=' + str(indict[dictkey])
@@ -95,7 +98,7 @@ def listlevel(inlist, llevel, fileio, dkey):
     If function finds a normal value, it prints the value
     """
 
-    # loop thru each key at the current level
+    # loop thru each list entry at the current level
     for listentry in inlist:
 
         # create output string showing level and current dictionary key
@@ -113,17 +116,21 @@ def listlevel(inlist, llevel, fileio, dkey):
             # write output to indicate end of nested dictionary
             dictvalue = outputstr + 'SubDictionary--End'
             fileio.writefile(dictvalue+"\n")
+
+        # test if current entry is a list
         elif isinstance(listentry, list):
             # write output to indicate beginning of nested list
             dictvalue = outputstr + 'List--Begin'
             fileio.writefile(dictvalue+"\n")
 
-            # recursive call to parse nested list, level stays same
+            # recursive call to parse nested list, level stays the same
             listlevel(listentry, llevel, fileio, dkey)
 
             # write output to indicate end of nested list
             dictvalue = outputstr + 'List--End'
             fileio.writefile(dictvalue+"\n")
+
+        # no dictionary, no list, must have a value
         else:
             # write output to show value from list entry
             dictvalue = outputstr + 'Value=' + listentry
