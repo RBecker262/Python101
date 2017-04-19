@@ -1,9 +1,9 @@
 """
-Json Dictionary Parsing Program
+JSON Dictionary Parsing Program
 Author: Robert Becker
 Date: April 17, 2017
-Purpose: Traverse a json dictionary printing levels and values
-Uses: json and requests libraries, response, and a recursive function
+Purpose: Traverse a JSON dictionary printing all levels and values
+Uses: JSON and requests libraries, response, and 2 recursive functions
 
 Read a config file to get the url of a json dictionary and store url
 Load url into dictionary variable and call recursive function to parse
@@ -49,7 +49,7 @@ dictdata = json.loads(urlresponse.text)
 filehandler = FileOps()
 filehandler.openfile()
 
-# call recursive function to parse json, pass dictionary and top level 1
+# call recursive function to parse JSON, pass dictionary and level 1
 parsfunc.dictlevel(dictdata, 1, filehandler)
 
 # close output file
