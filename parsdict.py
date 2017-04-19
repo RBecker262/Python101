@@ -5,8 +5,13 @@ Date: April 17, 2017
 Purpose: Traverse a JSON dictionary printing all levels and values
 Uses: JSON and requests libraries, response, and 2 recursive functions
 
-Read a config file to get the url of a json dictionary and store url
-Load url into dictionary variable and call recursive function to parse
+Read config file to get location of a json dictionary (url or local file)
+Load dictionary from location (local file has preference over url)
+Call dictlevel function to begin parsing process
+
+Config file should have 1 line per location. Example:
+url=http://somewebsite.com/somedirectory/somefile.json
+file=../DataFiles/somefile.json
 """
 
 
@@ -33,18 +38,33 @@ class FileOps:
 configfile = open('../DataFiles/config_parsdict.py', 'r')
 configrec = configfile.readline()
 
-# loop thru file and store parameters
+# initialize variables for possible locations
+jsonurl = ""
+jsonfile = ""
+
+# loop thru config file and store parameters
 while configrec != "":
     if configrec[:4] == 'url=':
-        url = configrec[4:]
+        jsonurl = configrec[4:].rstrip('\n')
+    elif configrec[:5] == 'file=':
+        jsonfile = configrec[5:].rstrip('\n')
     configrec = configfile.readline()
 
 # close config file
 configfile.close()
 
-# get response from url and convert text into dictionary
-urlresponse = requests.get(url)
-dictdata = json.loads(urlresponse.text)
+# get JSON data from file if provided and load into dictionary
+if jsonfile != "":
+    print('Dictionary location = ' + jsonfile)
+    jfile = open(jsonfile, 'r')
+    jdata = jfile.readline()
+    dictdata = json.loads(jdata)
+    jfile.close()
+# get response from url if provided and convert text into dictionary
+elif jsonurl != "":
+    print('Dictionary location = ' + jsonurl)
+    jsonurlresp = requests.get(jsonurl)
+    dictdata = json.loads(jsonurlresp.text)
 
 filehandler = FileOps()
 filehandler.openfile()

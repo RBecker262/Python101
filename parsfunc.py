@@ -133,5 +133,5 @@ def listlevel(inlist, llevel, fileio, dkey):
         # no dictionary, no list, must have a value
         else:
             # write output to show value from list entry
-            dictvalue = outputstr + 'Value=' + listentry
+            dictvalue = outputstr + 'Value=' + str(listentry)
             fileio.writefile(dictvalue+"\n")
