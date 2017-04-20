@@ -34,13 +34,13 @@ class FileOps:
         parsed.outfile.close()
 
 
+# initialize variables for possible dictionary locations
+jsonurl = ""
+jsonfile = ""
+
 # open config file and read first line
 configfile = open('../DataFiles/config_parsdict.py', 'r')
 configrec = configfile.readline()
-
-# initialize variables for possible locations
-jsonurl = ""
-jsonfile = ""
 
 # loop thru config file and store parameters
 while configrec != "":
@@ -60,16 +60,17 @@ if jsonfile != "":
     jdata = jfile.readline()
     dictdata = json.loads(jdata)
     jfile.close()
-# get response from url if provided and convert text into dictionary
+# get JSON data from url if provided and load into dictionary
 elif jsonurl != "":
     print('Dictionary location = ' + jsonurl)
     jsonurlresp = requests.get(jsonurl)
     dictdata = json.loads(jsonurlresp.text)
 
+# use class to open file which is passed to dictionary function
 filehandler = FileOps()
 filehandler.openfile()
 
-# call recursive function to parse JSON, pass dictionary and level 1
+# call recursive function to parse JSON dictionary
 parsfunc.dictlevel(dictdata, 1, filehandler)
 
 # close output file
