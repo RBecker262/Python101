@@ -29,21 +29,26 @@ Level n   Key=444 List--End
 """
 
 
-def dictlevel(indict, dlevel, fileio):
+def dictlevel(indict, dlevel, fileio, lname):
     """
     Input parameters:
     indict = dictionary to be parsed
     dlevel = current dictionary level
     fileio = class for file operations
+    lname  = last name of desired player stats
 
     Function loops through dictionary keys and examines values
     If function finds a nested dictionary, it calls itself
     If function finds a list, it calls listlevel to parse the list
     If function finds a normal value, it prints the value
+    If value is for desired player, print name and all stats for player
     """
 
     # get the list of dictionary keys at the current level
     keylist = list(indict.keys())
+
+    # set player match to false
+    playermatch = False
 
     # loop thru each dictionary key at the current level
     for dictkey in keylist:
@@ -58,7 +63,7 @@ def dictlevel(indict, dlevel, fileio):
             fileio.writefile(dictvalue+"\n")
 
             # recursive call to parse nested dictionary, increase level
-            dictlevel(indict[dictkey], dlevel+1, fileio)
+            dictlevel(indict[dictkey], dlevel+1, fileio, lname)
 
             # write output to indicate end of nested dictionary
             dictvalue = outputstr + 'SubDictionary--End'
@@ -71,7 +76,7 @@ def dictlevel(indict, dlevel, fileio):
             fileio.writefile(dictvalue+"\n")
 
             # call function to parse list, level stays same
-            listlevel(indict[dictkey], dlevel, fileio, dictkey)
+            listlevel(indict[dictkey], dlevel, fileio, dictkey, lname)
 
             # write output to indicate end of list
             dictvalue = outputstr + 'List--End'
@@ -83,14 +88,28 @@ def dictlevel(indict, dlevel, fileio):
             dictvalue = outputstr + 'Value=' + str(indict[dictkey])
             fileio.writefile(dictvalue+"\n")
 
+            # if new name set to false until we have desired player
+            if dictkey == 'name':
+                playermatch = False
 
-def listlevel(inlist, llevel, fileio, dkey):
+                # if desired player set to true and print last name
+                if str(indict[dictkey]) == lname:
+                    playermatch = True
+                    print('Player stats for: ' + lname)
+
+            # if we have desired player data, print statkey and value
+            elif playermatch:
+                print(dictkey + ' = ' + str(indict[dictkey]))
+
+
+def listlevel(inlist, llevel, fileio, dkey, lname):
     """
     Input parameters:
     inlist = list to be parsed
     llevel = current dictionary level, will not change
     fileio = class for file operations
     dkey   = current dictionary key, needed for output
+    lname  = last name of desired player stats
 
     Function loops through a list and examines list entries
     If function finds a nested dictionary, it calls dictlevel
@@ -111,7 +130,7 @@ def listlevel(inlist, llevel, fileio, dkey):
             fileio.writefile(dictvalue+"\n")
 
             # call dictlevel to parse nested dictionary, increase level
-            dictlevel(listentry, llevel+1, fileio)
+            dictlevel(listentry, llevel+1, fileio, lname)
 
             # write output to indicate end of nested dictionary
             dictvalue = outputstr + 'SubDictionary--End'
@@ -124,7 +143,7 @@ def listlevel(inlist, llevel, fileio, dkey):
             fileio.writefile(dictvalue+"\n")
 
             # recursive call to parse nested list, level stays the same
-            listlevel(listentry, llevel, fileio, dkey)
+            listlevel(listentry, llevel, fileio, dkey, lname)
 
             # write output to indicate end of nested list
             dictvalue = outputstr + 'List--End'
