@@ -47,8 +47,12 @@ def dictlevel(indict, dlevel, fileio, lname):
     # get the list of dictionary keys at the current level
     keylist = list(indict.keys())
 
-    # set player match to false
-    playermatch = False
+    # if desired player is in this part of dictionary, start printing
+    if 'name' in keylist and str(indict['name']) == lname:
+        playermatch = True
+        print('Player stats for: ' + lname)
+    else:
+        playermatch = False
 
     # loop thru each dictionary key at the current level
     for dictkey in keylist:
@@ -88,17 +92,8 @@ def dictlevel(indict, dlevel, fileio, lname):
             dictvalue = outputstr + 'Value=' + str(indict[dictkey])
             fileio.writefile(dictvalue+"\n")
 
-            # if new name set to false until we have desired player
-            if dictkey == 'name':
-                playermatch = False
-
-                # if desired player set to true and print last name
-                if str(indict[dictkey]) == lname:
-                    playermatch = True
-                    print('Player stats for: ' + lname)
-
-            # if we have desired player data, print statkey and value
-            elif playermatch:
+            # print game stat value if this is our guy
+            if playermatch:
                 print(dictkey + ' = ' + str(indict[dictkey]))
 
 
