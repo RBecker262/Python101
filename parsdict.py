@@ -10,9 +10,11 @@ Read config file to get possible locations of a json dictionary (url or file)
 Load dictionary from location (determined by Command Line arguments)
 Call dictlevel function to begin parsing process
 
-Config file should have 1 line per location. Example:
+Config file can have many locations defined. Example:
 url=http://somewebsite.com/somedirectory/somefile.json
-file=../DataFiles/somefile.json
+url1=http://somewebsite.com/somedirectory/someothefile.json
+file1=../DataFiles/somelocalfile.json
+file2=../DataFiles/anotherlocalfile.json
 """
 
 
@@ -49,57 +51,61 @@ def parse_arguments():
     parser.add_argument(
         '-i',
         '--input',
-        help='Input data source; specify url or file',
+        help='Input data source; specify url(n) or file(n)',
         dest='input',
         type=str,
     )
     return parser.parse_args()
 
 
-# get command line arguments
-args = parse_arguments()
+def main():
+    # get command line arguments
+    args = parse_arguments()
 
-# initialize variables for possible dictionary locations
-jsonurl = ""
-jsonfile = ""
+    # initialize variable for possible dictionary locations
+    jsonloc = ""
+    argloc = args.input + "="
+    loclen = len(argloc)
 
-# open config file and read first line
-configfile = open('../DataFiles/config_parsdict.py', 'r')
-configrec = configfile.readline()
-
-# loop thru config file and store parameters
-while configrec != "":
-    if configrec[:4] == 'url=':
-        jsonurl = configrec[4:].rstrip('\n')
-    elif configrec[:5] == 'file=':
-        jsonfile = configrec[5:].rstrip('\n')
+    # open config file and read first line
+    configfile = open('../DataFiles/config_parsdict.py', 'r')
     configrec = configfile.readline()
 
-# close config file
-configfile.close()
+    # loop thru config file and store desired location
+    while configrec != "":
+        if configrec[:loclen] == argloc:
+            jsonloc = configrec[loclen:].rstrip('\n')
+        configrec = configfile.readline()
 
-# get JSON data from file if desired and load into dictionary
-if args.input == 'file' and jsonfile != "":
-    print('Dictionary location = ' + jsonfile)
-    jfile = open(jsonfile, 'r')
-    jdata = jfile.readline()
-    dictdata = json.loads(jdata)
-    jfile.close()
-# get JSON data from url if desired and load into dictionary
-elif args.input == 'url' and jsonurl != "":
-    print('Dictionary location = ' + jsonurl)
-    jsonurlresp = requests.get(jsonurl)
-    dictdata = json.loads(jsonurlresp.text)
-# don't have proper Config paramater based on Command Line argument
-else:
-    quit('Command line input inconsistent with Config file: ' + args.input)
+    # close config file
+    configfile.close()
 
-# use class to open file which is passed to dictionary function
-filehandler = file_ops()
-filehandler.openfile()
+    # get JSON data from file if desired and load into dictionary
+    if args.input[:4] == 'file' and jsonloc != "":
+        print('Dictionary location = ' + jsonloc)
+        jfile = open(jsonloc, 'r')
+        jdata = jfile.readline()
+        dictdata = json.loads(jdata)
+        jfile.close()
+    # get JSON data from url if desired and load into dictionary
+    elif args.input[:3] == 'url' and jsonloc != "":
+        print('Dictionary location = ' + jsonloc)
+        jsonresp = requests.get(jsonloc)
+        dictdata = json.loads(jsonresp.text)
+    # don't have proper Config paramater based on Command Line argument
+    else:
+        quit('Command line input inconsistent with Config file: ' + args.input)
 
-# call recursive function to parse JSON dictionary
-parsfunc.dictlevel(dictdata, 1, filehandler, args.last_name)
+    # use class to open file which is passed to dictionary function
+    output_file = file_ops()
+    output_file.openfile()
 
-# close output file
-filehandler.closefile()
+    # call recursive function to parse JSON dictionary
+    parsfunc.dictlevel(dictdata, 1, output_file, args.last_name)
+
+    # close output file
+    output_file.closefile()
+
+
+if __name__ == '__main__':
+    main()
