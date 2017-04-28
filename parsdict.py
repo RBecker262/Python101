@@ -22,18 +22,18 @@ import requests
 import parsfunc
 
 
-class FileOps:
+class file_ops:
     """
-    docstring for FileOps
+    Define open, write, and close methods for class file_ops
     """
-    def openfile(parsed):
-        parsed.outfile = open('../DataFiles/dictparsed.txt', 'w')
+    def openfile(self):
+        self.outfile = open('../DataFiles/dictparsed.txt', 'w')
 
-    def writefile(parsed, stringout):
-        parsed.outfile.write(stringout)
+    def writefile(self, stringout):
+        self.outfile.write(stringout)
 
-    def closefile(parsed):
-        parsed.outfile.close()
+    def closefile(self):
+        self.outfile.close()
 
 
 def parse_arguments():
@@ -95,7 +95,7 @@ else:
     quit('Command line input inconsistent with Config file: ' + args.input)
 
 # use class to open file which is passed to dictionary function
-filehandler = FileOps()
+filehandler = file_ops()
 filehandler.openfile()
 
 # call recursive function to parse JSON dictionary
