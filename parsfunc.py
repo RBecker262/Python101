@@ -29,13 +29,14 @@ Level n   Key=444 List--End
 """
 
 
-def dictlevel(indict, dlevel, fileio, lname):
+def dictlevel(indict, dlevel, lname, fileio, writeme):
     """
     Input parameters:
-    indict = dictionary to be parsed
-    dlevel = current dictionary level
-    fileio = class for file operations
-    lname  = last name of desired player stats
+    indict  = dictionary to be parsed
+    dlevel  = current dictionary level
+    lname   = last name of desired player stats
+    fileio  = class for file operations
+    writeme = do we write output file or not
 
     Function loops through dictionary keys and examines values
     If function finds a nested dictionary, it calls itself
@@ -44,13 +45,18 @@ def dictlevel(indict, dlevel, fileio, lname):
     If value is for desired player, print name and all stats for player
     """
 
+    # establish result dictionary of desired player data
+    myplayerdata = {}
+
     # get the list of dictionary keys at the current level
     keylist = list(indict.keys())
 
     # if desired player is in this part of dictionary, start printing
     if 'name' in keylist and str(indict['name']) == lname:
         playermatch = True
+        myplayerdata = indict
         print('Player stats for: ' + lname)
+        print(myplayerdata)
     else:
         playermatch = False
 
@@ -64,47 +70,48 @@ def dictlevel(indict, dlevel, fileio, lname):
         if isinstance(indict[dictkey], dict):
             # write output to indicate beginning of nested dictionary
             dictvalue = outputstr + 'SubDictionary--Begin'
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
             # recursive call to parse nested dictionary, increase level
-            dictlevel(indict[dictkey], dlevel+1, fileio, lname)
+            dictlevel(indict[dictkey], dlevel+1, lname, fileio, writeme)
 
             # write output to indicate end of nested dictionary
             dictvalue = outputstr + 'SubDictionary--End'
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
         # test if current value is a list
         elif isinstance(indict[dictkey], list):
             # write output to indicate beginning of list
             dictvalue = outputstr + 'List--Begin'
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
             # call function to parse list, level stays same
-            listlevel(indict[dictkey], dlevel, fileio, dictkey, lname)
+            listlevel(indict[dictkey], dlevel, dictkey, lname, fileio, writeme)
 
             # write output to indicate end of list
             dictvalue = outputstr + 'List--End'
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
         # no dictionary, no list, must have a value
         else:
             # write output to show value from dictionary key
             dictvalue = outputstr + 'Value=' + str(indict[dictkey])
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
             # print game stat value if this is our guy
             if playermatch:
                 print(dictkey + ' = ' + str(indict[dictkey]))
 
 
-def listlevel(inlist, llevel, fileio, dkey, lname):
+def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
     """
     Input parameters:
-    inlist = list to be parsed
-    llevel = current dictionary level, will not change
-    fileio = class for file operations
-    dkey   = current dictionary key, needed for output
-    lname  = last name of desired player stats
+    inlist  = list to be parsed
+    llevel  = current dictionary level, will not change
+    dkey    = current dictionary key, needed for output
+    lname   = last name of desired player stats
+    fileio  = class for file operations
+    writeme = do we write output file or not
 
     Function loops through a list and examines list entries
     If function finds a nested dictionary, it calls dictlevel
@@ -122,30 +129,30 @@ def listlevel(inlist, llevel, fileio, dkey, lname):
         if isinstance(listentry, dict):
             # write output to indicate beginning of nested dictionary
             dictvalue = outputstr + 'SubDictionary--Begin'
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
             # call dictlevel to parse nested dictionary, increase level
-            dictlevel(listentry, llevel+1, fileio, lname)
+            dictlevel(listentry, llevel+1, lname, fileio, writeme)
 
             # write output to indicate end of nested dictionary
             dictvalue = outputstr + 'SubDictionary--End'
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
         # test if current entry is a list
         elif isinstance(listentry, list):
             # write output to indicate beginning of nested list
             dictvalue = outputstr + 'List--Begin'
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
             # recursive call to parse nested list, level stays the same
-            listlevel(listentry, llevel, fileio, dkey, lname)
+            listlevel(listentry, llevel, dkey, lname, fileio, writeme)
 
             # write output to indicate end of nested list
             dictvalue = outputstr + 'List--End'
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)
 
         # no dictionary, no list, must have a value
         else:
             # write output to show value from list entry
             dictvalue = outputstr + 'Value=' + str(listentry)
-            fileio.writefile(dictvalue+"\n")
+            fileio.writefile(dictvalue+"\n", writeme)

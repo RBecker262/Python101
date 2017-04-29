@@ -10,7 +10,8 @@ Read config file to get possible locations of a json dictionary (url or file)
 Load dictionary from location (determined by Command Line arguments)
 Call dictlevel function to begin parsing process
 
-Config file can have many locations defined. Example:
+Config file can have many locations defined. Order of entries is irrelevant.
+Example:
 url=http://somewebsite.com/somedirectory/somefile.json
 url1=http://somewebsite.com/somedirectory/someothefile.json
 file1=../DataFiles/somelocalfile.json
@@ -27,15 +28,19 @@ import parsfunc
 class file_ops:
     """
     Define open, write, and close methods for class file_ops
+    Command line arg passed to determine if output should be produced
     """
-    def openfile(self):
-        self.outfile = open('../DataFiles/dictparsed.txt', 'w')
+    def openfile(self, writeoutput):
+        if writeoutput:
+            self.outfile = open('../DataFiles/dictparsed.txt', 'w')
 
-    def writefile(self, stringout):
-        self.outfile.write(stringout)
+    def writefile(self, stringout, writeoutput):
+        if writeoutput:
+            self.outfile.write(stringout)
 
-    def closefile(self):
-        self.outfile.close()
+    def closefile(self, writeoutput):
+        if writeoutput:
+            self.outfile.close()
 
 
 def parse_arguments():
@@ -55,12 +60,25 @@ def parse_arguments():
         dest='input',
         type=str,
     )
+    parser.add_argument(
+        '-o',
+        '--output',
+        help='Indicates output file created (y or n)',
+        dest='output',
+        type=str,
+    )
     return parser.parse_args()
 
 
 def main():
     # get command line arguments
     args = parse_arguments()
+
+    # set boolean variable if we should write output file or not
+    if args.output.upper() == "Y":
+        writeme = True
+    else:
+        writeme = False
 
     # initialize variable for possible dictionary locations
     jsonloc = ""
@@ -98,13 +116,13 @@ def main():
 
     # use class to open file which is passed to dictionary function
     output_file = file_ops()
-    output_file.openfile()
+    output_file.openfile(writeme)
 
     # call recursive function to parse JSON dictionary
-    parsfunc.dictlevel(dictdata, 1, output_file, args.last_name)
+    parsfunc.dictlevel(dictdata, 1, args.last_name, output_file, writeme)
 
     # close output file
-    output_file.closefile()
+    output_file.closefile(writeme)
 
 
 if __name__ == '__main__':
