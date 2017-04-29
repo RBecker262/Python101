@@ -61,10 +61,10 @@ def parse_arguments():
         type=str,
     )
     parser.add_argument(
-        '-o',
         '--output',
         help='Indicates output file created (y or n)',
         dest='output',
+        default='N',
         type=str,
     )
     return parser.parse_args()
@@ -119,7 +119,16 @@ def main():
     output_file.openfile(writeme)
 
     # call recursive function to parse JSON dictionary
-    parsfunc.dictlevel(dictdata, 1, args.last_name, output_file, writeme)
+    myplayer = parsfunc.dictlevel(dictdata,
+                                  1,
+                                  args.last_name,
+                                  output_file,
+                                  writeme)
+    myplayerkeys = list(myplayer.keys())
+
+    print("Player: " + args.last_name)
+    for dictkey in myplayerkeys:
+        print(dictkey + " = " + myplayer[dictkey])
 
     # close output file
     output_file.closefile(writeme)

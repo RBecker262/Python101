@@ -53,12 +53,8 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
 
     # if desired player is in this part of dictionary, start printing
     if 'name' in keylist and str(indict['name']) == lname:
-        playermatch = True
         myplayerdata = indict
-        print('Player stats for: ' + lname)
-        print(myplayerdata)
-    else:
-        playermatch = False
+        return myplayerdata
 
     # loop thru each dictionary key at the current level
     for dictkey in keylist:
@@ -73,7 +69,13 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
             fileio.writefile(dictvalue+"\n", writeme)
 
             # recursive call to parse nested dictionary, increase level
-            dictlevel(indict[dictkey], dlevel+1, lname, fileio, writeme)
+            myplayerdata = dictlevel(indict[dictkey],
+                                     dlevel+1,
+                                     lname,
+                                     fileio,
+                                     writeme)
+            if myplayerdata:
+                return myplayerdata
 
             # write output to indicate end of nested dictionary
             dictvalue = outputstr + 'SubDictionary--End'
@@ -86,7 +88,14 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
             fileio.writefile(dictvalue+"\n", writeme)
 
             # call function to parse list, level stays same
-            listlevel(indict[dictkey], dlevel, dictkey, lname, fileio, writeme)
+            myplayerdata = listlevel(indict[dictkey],
+                                     dlevel,
+                                     dictkey,
+                                     lname,
+                                     fileio,
+                                     writeme)
+            if myplayerdata:
+                return myplayerdata
 
             # write output to indicate end of list
             dictvalue = outputstr + 'List--End'
@@ -98,9 +107,7 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
             dictvalue = outputstr + 'Value=' + str(indict[dictkey])
             fileio.writefile(dictvalue+"\n", writeme)
 
-            # print game stat value if this is our guy
-            if playermatch:
-                print(dictkey + ' = ' + str(indict[dictkey]))
+    return myplayerdata
 
 
 def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
@@ -119,6 +126,9 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
     If function finds a normal value, it prints the value
     """
 
+    # establish result dictionary of desired player data
+    myplayerdata = {}
+
     # loop thru each list entry at the current level
     for listentry in inlist:
 
@@ -132,7 +142,13 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
             fileio.writefile(dictvalue+"\n", writeme)
 
             # call dictlevel to parse nested dictionary, increase level
-            dictlevel(listentry, llevel+1, lname, fileio, writeme)
+            myplayerdata = dictlevel(listentry,
+                                     llevel+1,
+                                     lname,
+                                     fileio,
+                                     writeme)
+            if myplayerdata:
+                return myplayerdata
 
             # write output to indicate end of nested dictionary
             dictvalue = outputstr + 'SubDictionary--End'
@@ -145,7 +161,14 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
             fileio.writefile(dictvalue+"\n", writeme)
 
             # recursive call to parse nested list, level stays the same
-            listlevel(listentry, llevel, dkey, lname, fileio, writeme)
+            myplayerdata = listlevel(listentry,
+                                     llevel,
+                                     dkey,
+                                     lname,
+                                     fileio,
+                                     writeme)
+            if myplayerdata:
+                return myplayerdata
 
             # write output to indicate end of nested list
             dictvalue = outputstr + 'List--End'
@@ -156,3 +179,5 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
             # write output to show value from list entry
             dictvalue = outputstr + 'Value=' + str(listentry)
             fileio.writefile(dictvalue+"\n", writeme)
+
+    return myplayerdata
