@@ -2,7 +2,7 @@
 JSON Dictionary Parsing Program
 Author: Robert Becker
 Date: April 17, 2017
-Purpose: Traverse a JSON dictionary printing all levels and values
+Purpose: Parse a JSON dictionary and return player info or print all data
 Uses: JSON and requests libraries, response, and 2 recursive functions
 
 Get Command Line arguments to determine data source and player stats desired
@@ -20,6 +20,7 @@ file2=../DataFiles/anotherlocalfile.json
 
 
 import argparse
+import configparser
 import json
 import requests
 import parsfunc
@@ -30,9 +31,9 @@ class file_ops:
     Define open, write, and close methods for class file_ops
     Command line arg passed to determine if output should be produced
     """
-    def openfile(self, writeoutput):
+    def openfile(self, parsed_output, writeoutput):
         if writeoutput:
-            self.outfile = open('../DataFiles/dictparsed.txt', 'w')
+            self.outfile = open(parsed_output, 'w')
 
     def writefile(self, stringout, writeoutput):
         if writeoutput:
@@ -71,52 +72,42 @@ def parse_arguments():
 
 
 def main():
-    # get command line arguments
-    args = parse_arguments()
+    # set config and output file locations
+    config_ini = '../DataFiles/config_parsdict.ini'
+    parsedout = '../DataFiles/dictparsed.txt'
 
-    # set boolean variable if we should write output file or not
+    # get command line arguments and set boolean to write output file or not
+    args = parse_arguments()
     if args.output.upper() == "Y":
         writeme = True
     else:
         writeme = False
 
-    # initialize variable for possible dictionary locations
-    jsonloc = ""
-    argloc = args.input + "="
-    loclen = len(argloc)
+    # get location from config file using command line argument as the key
+    config = configparser.ConfigParser()
+    config.read(config_ini)
+    jsonloc = config.get("DataSources", args.input)
 
-    # open config file and read first line
-    configfile = open('../DataFiles/config_parsdict.py', 'r')
-    configrec = configfile.readline()
-
-    # loop thru config file and store desired location
-    while configrec != "":
-        if configrec[:loclen] == argloc:
-            jsonloc = configrec[loclen:].rstrip('\n')
-        configrec = configfile.readline()
-
-    # close config file
-    configfile.close()
+    # print dictionary location that was chosen
+    print('Dictionary location = ' + jsonloc)
 
     # get JSON data from file if desired and load into dictionary
     if args.input[:4] == 'file' and jsonloc != "":
-        print('Dictionary location = ' + jsonloc)
         jfile = open(jsonloc, 'r')
         jdata = jfile.readline()
         dictdata = json.loads(jdata)
         jfile.close()
     # get JSON data from url if desired and load into dictionary
     elif args.input[:3] == 'url' and jsonloc != "":
-        print('Dictionary location = ' + jsonloc)
         jsonresp = requests.get(jsonloc)
         dictdata = json.loads(jsonresp.text)
     # don't have proper Config paramater based on Command Line argument
     else:
         quit('Command line input inconsistent with Config file: ' + args.input)
 
-    # use class to open file which is passed to dictionary function
+    # open output file parsedout if command line argument --output is true
     output_file = file_ops()
-    output_file.openfile(writeme)
+    output_file.openfile(parsedout, writeme)
 
     # call recursive function to parse JSON dictionary
     myplayer = parsfunc.dictlevel(dictdata,
@@ -124,13 +115,16 @@ def main():
                                   args.last_name,
                                   output_file,
                                   writeme)
+
+    # get list of keys from returned player data and print header
     myplayerkeys = list(myplayer.keys())
 
+    # print heading for player followed by his boxscore data
     print("Player: " + args.last_name)
     for dictkey in myplayerkeys:
         print(dictkey + " = " + myplayer[dictkey])
 
-    # close output file
+    # close output file (if it was opened)
     output_file.closefile(writeme)
 
 
