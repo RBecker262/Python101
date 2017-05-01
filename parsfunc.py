@@ -2,9 +2,9 @@
 Parse Dictionary Function Library
 Author: Robert Becker
 Date: April 17, 2017
-Purpose: Recursive functions used to parse a JSON dictionary
+Purpose: Recursive functions used to find player data in json dictionary
 
-Output will look like this...
+If output file desired, report will look like this...
 Level n   Key=abc Value=123
 
 Level n   Key=def SubDictionary--Begin
@@ -39,22 +39,18 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
     writeme = do we write output file or not
 
     Function loops through dictionary keys and examines values
-    If function finds a nested dictionary, it calls itself
-    If function finds a list, it calls listlevel to parse the list
-    If function finds a normal value, it prints the value
-    If value is for desired player, print name and all stats for player
+    If function finds a nested dictionary, call itself to parse next level
+    If function finds a list, call listlevel to parse the list
+    If function finds a normal value, it writes output file if desired
+    As soon as player data is found return to previous recursion level
     """
-
-    # establish result dictionary of desired player data
-    myplayerdata = {}
 
     # get the list of dictionary keys at the current level
     keylist = list(indict.keys())
 
-    # if desired player is in this part of dictionary, start printing
+    # if desired player is in this part of dictionary, return player data
     if 'name' in keylist and str(indict['name']) == lname:
-        myplayerdata = indict
-        return myplayerdata
+        return indict
 
     # loop thru each dictionary key at the current level
     for dictkey in keylist:
@@ -74,6 +70,8 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
                                      lname,
                                      fileio,
                                      writeme)
+
+            # if player data found, return data to previous recursion level
             if myplayerdata:
                 return myplayerdata
 
@@ -94,6 +92,8 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
                                      lname,
                                      fileio,
                                      writeme)
+
+            # If player data found, return data to previous recursion level
             if myplayerdata:
                 return myplayerdata
 
@@ -107,7 +107,8 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
             dictvalue = outputstr + 'Value=' + str(indict[dictkey])
             fileio.writefile(dictvalue+"\n", writeme)
 
-    return myplayerdata
+    # return empty dictionary if nothing found within this level
+    return {}
 
 
 def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
@@ -123,11 +124,8 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
     Function loops through a list and examines list entries
     If function finds a nested dictionary, it calls dictlevel
     If function finds a list, it calls itself to parse the list
-    If function finds a normal value, it prints the value
+    As soon as player data is found return to previous recursion level
     """
-
-    # establish result dictionary of desired player data
-    myplayerdata = {}
 
     # loop thru each list entry at the current level
     for listentry in inlist:
@@ -147,6 +145,8 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
                                      lname,
                                      fileio,
                                      writeme)
+
+            # if player data found, return data to previous recursion level
             if myplayerdata:
                 return myplayerdata
 
@@ -167,6 +167,8 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
                                      lname,
                                      fileio,
                                      writeme)
+
+            # if player data found, return data to previous recursion level
             if myplayerdata:
                 return myplayerdata
 
@@ -180,4 +182,5 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
             dictvalue = outputstr + 'Value=' + str(listentry)
             fileio.writefile(dictvalue+"\n", writeme)
 
-    return myplayerdata
+    # return empty dictionary if nothing found within this level
+    return {}
