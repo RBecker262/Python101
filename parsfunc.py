@@ -29,6 +29,9 @@ Level n   Key=444 List--End
 """
 
 
+import logging
+
+
 def dictlevel(indict, dlevel, lname, fileio, writeme):
     """
     Input parameters:
@@ -44,6 +47,9 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
     If function finds a normal value, it writes output file if desired
     As soon as player data is found return to previous recursion level
     """
+
+    logger = logging.getLogger(__name__)
+    logger.info('New dictionary level')
 
     # get the list of dictionary keys at the current level
     keylist = list(indict.keys())
@@ -126,6 +132,9 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
     If function finds a list, it calls itself to parse the list
     As soon as player data is found return to previous recursion level
     """
+
+    logger = logging.getLogger(__name__)
+    logger.info('New list level')
 
     # loop thru each list entry at the current level
     for listentry in inlist:

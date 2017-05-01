@@ -21,6 +21,8 @@ file2=../DataFiles/anotherlocalfile.json
 
 import argparse
 import configparser
+import logging
+import logging.config
 import json
 import requests
 import parsfunc
@@ -72,9 +74,15 @@ def parse_arguments():
 
 
 def main():
-    # set config and output file locations
+    # set logging, config, and output file locations
+    logging_ini = '../DataFiles/logging.ini'
     config_ini = '../DataFiles/config_parsdict.ini'
-    parsedout = '../DataFiles/dictparsed.txt'
+    parsed_out = '../DataFiles/dictparsed.txt'
+
+    # setup logging
+    logging.config.fileConfig(logging_ini)
+    logger = logging.getLogger(__name__)
+    logger.info('Executing parsdict module')
 
     # get command line arguments and set boolean to write output file or not
     args = parse_arguments()
@@ -82,6 +90,9 @@ def main():
         writeme = True
     else:
         writeme = False
+
+    # log command line arguments
+    logger.info('parsdict arguments: ' + args.last_name + ' ' + args.input)
 
     # get location from config file using command line argument as the key
     config = configparser.ConfigParser()
@@ -107,7 +118,7 @@ def main():
 
     # open output file parsedout if command line argument --output is true
     output_file = file_ops()
-    output_file.openfile(parsedout, writeme)
+    output_file.openfile(parsed_out, writeme)
 
     # call recursive function to parse JSON dictionary
     myplayer = parsfunc.dictlevel(dictdata,
