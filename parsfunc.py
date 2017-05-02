@@ -49,13 +49,14 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
     """
 
     logger = logging.getLogger(__name__)
-    logger.info('New dictionary level')
+    logger.debug('Dictionary level: ' + str(dlevel))
 
     # get the list of dictionary keys at the current level
     keylist = list(indict.keys())
 
     # if desired player is in this part of dictionary, return player data
     if 'name' in keylist and str(indict['name']) == lname:
+        logger.info(str(len(keylist)) + ' stats found for ' + lname)
         return indict
 
     # loop thru each dictionary key at the current level
@@ -70,12 +71,18 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
             dictvalue = outputstr + 'SubDictionary--Begin'
             fileio.writefile(dictvalue+"\n", writeme)
 
+            # log message to indicate about to make recursive call
+            logger.debug('Recursive call to dictlevel for key: ' + dictkey)
+
             # recursive call to parse nested dictionary, increase level
             myplayerdata = dictlevel(indict[dictkey],
                                      dlevel+1,
                                      lname,
                                      fileio,
                                      writeme)
+
+            # log message to indicate return from recursive call
+            logger.debug('Returned from recursive call for key: ' + dictkey)
 
             # if player data found, return data to previous recursion level
             if myplayerdata:
@@ -91,6 +98,9 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
             dictvalue = outputstr + 'List--Begin'
             fileio.writefile(dictvalue+"\n", writeme)
 
+            # log message to indicate about to parse a list
+            logger.debug('Call listlevel for dictionary key: ' + dictkey)
+
             # call function to parse list, level stays same
             myplayerdata = listlevel(indict[dictkey],
                                      dlevel,
@@ -98,6 +108,9 @@ def dictlevel(indict, dlevel, lname, fileio, writeme):
                                      lname,
                                      fileio,
                                      writeme)
+
+            # log message to indicate returned from recursive call
+            logger.debug('Returned from parsing list for key: ' + dictkey)
 
             # If player data found, return data to previous recursion level
             if myplayerdata:
@@ -134,7 +147,7 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
     """
 
     logger = logging.getLogger(__name__)
-    logger.info('New list level')
+    logger.debug('List within dictionary key: ' + dkey)
 
     # loop thru each list entry at the current level
     for listentry in inlist:
@@ -148,12 +161,18 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
             dictvalue = outputstr + 'SubDictionary--Begin'
             fileio.writefile(dictvalue+"\n", writeme)
 
+            # log message to indicate about to make recursive call
+            logger.debug('Recursive call to dictlevel from listlevel')
+
             # call dictlevel to parse nested dictionary, increase level
             myplayerdata = dictlevel(listentry,
                                      llevel+1,
                                      lname,
                                      fileio,
                                      writeme)
+
+            # log message to indicate returned from recursive call
+            logger.debug('Returned from recursive call for key: ' + dkey)
 
             # if player data found, return data to previous recursion level
             if myplayerdata:
@@ -169,6 +188,9 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
             dictvalue = outputstr + 'List--Begin'
             fileio.writefile(dictvalue+"\n", writeme)
 
+            # log message to indicate about to make recursive call
+            logger.debug('Recursive call to listlevel function')
+
             # recursive call to parse nested list, level stays the same
             myplayerdata = listlevel(listentry,
                                      llevel,
@@ -176,6 +198,9 @@ def listlevel(inlist, llevel, dkey, lname, fileio, writeme):
                                      lname,
                                      fileio,
                                      writeme)
+
+            # log message to indicate returned for recursive call
+            logger.debug('Returned from recursive call to listlevel')
 
             # if player data found, return data to previous recursion level
             if myplayerdata:
