@@ -39,15 +39,13 @@ logger = logging.getLogger(__name__)
 logger.info('Executing script: parsdict.py')
 
 
-class file_ops:
+class FileOps:
     """
     Define open, write, and close methods for class file_ops
     Command line arg passed to determine if output should be produced
     """
 
-    writeoutput = False
-
-    def outputyesno(self, writeme):
+    def __init__(self, writeme):
         self.writeoutput = writeme
 
     def openfile(self, parsed_output):
@@ -137,8 +135,7 @@ def main():
         quit()
 
     # open output file parsedout if command line argument --output is true
-    output_file = file_ops()
-    output_file.outputyesno(args.output)
+    output_file = FileOps(args.output)
     output_file.openfile(parsed_out)
 
     # log call to function to parse the json dictionary
