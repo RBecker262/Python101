@@ -36,7 +36,7 @@ parsed_out = '../DataFiles/dictparsed.txt'
 # setup logging
 logging.config.fileConfig(logging_ini)
 logger = logging.getLogger(__name__)
-logger.info('Executing script: parsdict')
+logger.info('Executing script: parsdict.py')
 
 
 class file_ops:
@@ -44,16 +44,22 @@ class file_ops:
     Define open, write, and close methods for class file_ops
     Command line arg passed to determine if output should be produced
     """
-    def openfile(self, parsed_output, writeoutput):
-        if writeoutput:
+
+    writeoutput = False
+
+    def outputyesno(self, writeme):
+        self.writeoutput = writeme
+
+    def openfile(self, parsed_output):
+        if self.writeoutput:
             self.outfile = open(parsed_output, 'w')
 
-    def writefile(self, stringout, writeoutput):
-        if writeoutput:
+    def writefile(self, stringout):
+        if self.writeoutput:
             self.outfile.write(stringout)
 
-    def closefile(self, writeoutput):
-        if writeoutput:
+    def closefile(self):
+        if self.writeoutput:
             self.outfile.close()
 
 
@@ -91,7 +97,7 @@ def main():
     # log command line arguments and if optional output file was chosen
     logger.info('parsdict arguments: ' + args.last_name + ' ' + args.input)
     if args.output:
-        logger.info('Writing all dictionary entries to file')
+        logger.info('Writing dictionary entries to file ' + parsed_out)
 
     # get location from config file using command line argument as the key
     config = configparser.ConfigParser()
@@ -132,7 +138,8 @@ def main():
 
     # open output file parsedout if command line argument --output is true
     output_file = file_ops()
-    output_file.openfile(parsed_out, args.output)
+    output_file.outputyesno(args.output)
+    output_file.openfile(parsed_out)
 
     # log call to function to parse the json dictionary
     logger.info('Searching the dictionary for ' + args.last_name)
@@ -141,8 +148,7 @@ def main():
     myplayer = parsfunc.dictlevel(dictdata,
                                   1,
                                   args.last_name,
-                                  output_file,
-                                  args.output)
+                                  output_file)
 
     # get list of keys from returned player data and print header
     myplayerkeys = list(myplayer.keys())
@@ -150,10 +156,10 @@ def main():
     # print heading for player followed by his boxscore data
     print("Player: " + args.last_name)
     for dictkey in myplayerkeys:
-        print(dictkey + " = " + myplayer[dictkey])
+        print(dictkey + " = " + str(myplayer[dictkey]))
 
     # close output file (if it was opened)
-    output_file.closefile(args.output)
+    output_file.closefile()
 
 
 if __name__ == '__main__':
