@@ -152,6 +152,17 @@ def load_dictionary(jsonkey, jsonplace):
         sys.exit()
 
 
+def print_player_info(playerdict, lastname):
+
+    # get list of dictionary keys from returned player data
+    keylist = list(playerdict.keys())
+
+    # print heading for player followed by his boxscore data
+    print("Player: " + lastname)
+    for dictkey in keylist:
+        print(dictkey + " = " + str(playerdict[dictkey]))
+
+
 def main():
 
     args = get_command_arguments()
@@ -162,22 +173,14 @@ def main():
     output_file = FileOps(args.output)
     output_file.openfile(PARSED_OUT)
 
-    # log call to function to parse the json dictionary
+    # call recursive function to parse JSON dictionary for my player
     logger.info('Searching the dictionary for ' + args.last_name)
-
-    # call recursive function to parse JSON dictionary
     myplayer = parsfunc.dictlevel(jsondict,
                                   1,
                                   args.last_name,
                                   output_file)
 
-    # get list of keys from returned player data and print header
-    myplayerkeys = list(myplayer.keys())
-
-    # print heading for player followed by his boxscore data
-    print("Player: " + args.last_name)
-    for dictkey in myplayerkeys:
-        print(dictkey + " = " + str(myplayer[dictkey]))
+    print_player_info(myplayer, args.last_name)
 
     # close output file (if it was opened)
     output_file.closefile()
