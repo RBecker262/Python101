@@ -23,6 +23,7 @@ import argparse
 import configparser
 import logging
 import logging.config
+import sys
 import json
 import requests
 import parsfunc
@@ -41,6 +42,8 @@ logger.info('Executing script: parsdict.py')
 
 class FileOps:
     """
+    File handling routing for dictionary output file
+
     __init__   sets writeoutput to True/False based on -o command line argument
     openfile   passed the file location, opens if writeoutput is True
     writefile  passed the output string, writes record if writeoutput is True
@@ -63,7 +66,7 @@ class FileOps:
             self.outfile.close()
 
 
-def parse_arguments():
+def get_command_arguments():
     """
     last_name  required, name of player used to select data
     input      required, specifies data source, naming pattern url__ or file__
@@ -91,57 +94,69 @@ def parse_arguments():
         dest='output',
         action='store_true'
     )
-    return parser.parse_args()
 
-
-def main():
-    # get command line arguments
-    args = parse_arguments()
-
+    argue = parser.parse_args()
     # log command line arguments and if optional output file was chosen
-    logger.info('parsdict arguments: ' + args.last_name + ' ' + args.input)
-    if args.output:
+    logger.info('parsdict arguments: ' + argue.last_name + ' ' + argue.input)
+    if argue.output:
         logger.info('Writing dictionary entries to file ' + PARSED_OUT)
+
+    return argue
+
+
+def get_json_location(jsonkey):
 
     # get location from config file using command line argument as the key
     config = configparser.ConfigParser()
     config.read(CONFIG_INI)
 
     # verify input key is in DataSource before setting source location
-    if config.has_option("DataSources", args.input):
-        jsonloc = config.get("DataSources", args.input)
+    if config.has_option("DataSources", jsonkey):
+        return config.get("DataSources", jsonkey)
     else:
-        logger.critical(args.input + ' key missing from config DataSource')
-        return
+        logger.critical(jsonkey + ' key missing from config DataSource')
+        return sys.exit()
+
+
+def load_dictionary(jsonkey, jsonplace):
 
     # log dictionary location
-    logger.info('Loading dictionary from location: ' + jsonloc)
+    logger.info('Loading dictionary from location: ' + jsonplace)
 
     # get JSON data from file if desired and load into dictionary
-    if args.input[:4] == 'file':
+    if jsonkey[:4] == 'file':
         try:
-            jfile = open(jsonloc, 'r')
+            jfile = open(jsonplace, 'r')
             jdata = jfile.readline()
-            dictdata = json.loads(jdata)
             jfile.close()
+            dictdata = json.loads(jdata)
+            return dictdata
         except Exception as e:
             logger.critical('Error loading dictionary from file. . .')
             logger.exception(e)
-            return
+            sys.exit()
     # get JSON data from url if desired and load into dictionary
-    elif args.input[:3] == 'url':
+    elif jsonkey[:3] == 'url':
         try:
-            jsonresp = requests.get(jsonloc)
+            jsonresp = requests.get(jsonplace)
             dictdata = json.loads(jsonresp.text)
+            return dictdata
         except Exception as e:
             # ex_type, ex, tb = sys.exec_info()
             logger.critical('Error loading dictionary from url. . .')
             logger.exception(e)
-            return
+            sys.exit()
     # don't have proper Config paramater based on Command Line argument
     else:
         logger.critical('Config DataSource key must start with url or file')
-        return
+        sys.exit()
+
+
+def main():
+
+    args = get_command_arguments()
+    jsonloc = get_json_location(args.input)
+    jsondict = load_dictionary(args.input, jsonloc)
 
     # open output file parsedout if command line argument --output is true
     output_file = FileOps(args.output)
@@ -151,7 +166,7 @@ def main():
     logger.info('Searching the dictionary for ' + args.last_name)
 
     # call recursive function to parse JSON dictionary
-    myplayer = parsfunc.dictlevel(dictdata,
+    myplayer = parsfunc.dictlevel(jsondict,
                                   1,
                                   args.last_name,
                                   output_file)
