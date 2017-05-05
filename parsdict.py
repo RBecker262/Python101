@@ -29,20 +29,22 @@ import parsfunc
 
 
 # set logging, config, and output file locations
-logging_ini = '../DataFiles/parsdict_logging.ini'
-config_ini = '../DataFiles/parsdict_config.ini'
-parsed_out = '../DataFiles/dictparsed.txt'
+CONFIG_INI = '../DataFiles/parsdict_config.ini'
+LOGGING_INI = '../DataFiles/parsdict_logging.ini'
+PARSED_OUT = '../DataFiles/dictparsed.txt'
 
-# setup logging
-logging.config.fileConfig(logging_ini)
+# setup logging and log initial message
+logging.config.fileConfig(LOGGING_INI)
 logger = logging.getLogger(__name__)
 logger.info('Executing script: parsdict.py')
 
 
 class FileOps:
     """
-    Define open, write, and close methods for class file_ops
-    Command line arg passed to determine if output should be produced
+    __init__   sets writeoutput to True/False based on -o command line argument
+    openfile   passed the file location, opens if writeoutput is True
+    writefile  passed the output string, writes record if writeoutput is True
+    closefile  closes file if writeoutput is True
     """
 
     def __init__(self, writeme):
@@ -62,9 +64,13 @@ class FileOps:
 
 
 def parse_arguments():
-    # instantiate an "ArgumentParser" from the argparse module in stdlib
-    # the first argument of the contstructor is the "help"
-    # https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser
+    """
+    last_name  required, name of player used to select data
+    input      required, specifies data source, naming pattern url__ or file__
+    output     optional, if provided a file of dictionary elements is created
+                   -o, --output, this is all that needs to be specified if used
+    """
+
     parser = argparse.ArgumentParser('Search Game Data for Player Statistics')
     parser.add_argument(
         help='Player last name',
@@ -95,18 +101,18 @@ def main():
     # log command line arguments and if optional output file was chosen
     logger.info('parsdict arguments: ' + args.last_name + ' ' + args.input)
     if args.output:
-        logger.info('Writing dictionary entries to file ' + parsed_out)
+        logger.info('Writing dictionary entries to file ' + PARSED_OUT)
 
     # get location from config file using command line argument as the key
     config = configparser.ConfigParser()
-    config.read(config_ini)
+    config.read(CONFIG_INI)
 
     # verify input key is in DataSource before setting source location
     if config.has_option("DataSources", args.input):
         jsonloc = config.get("DataSources", args.input)
     else:
         logger.critical(args.input + ' key missing from config DataSource')
-        quit()
+        return
 
     # log dictionary location
     logger.info('Loading dictionary from location: ' + jsonloc)
@@ -118,25 +124,28 @@ def main():
             jdata = jfile.readline()
             dictdata = json.loads(jdata)
             jfile.close()
-        except:
+        except Exception as e:
             logger.critical('Error loading dictionary from file. . .')
-            quit()
+            logger.exception(e)
+            return
     # get JSON data from url if desired and load into dictionary
     elif args.input[:3] == 'url':
         try:
             jsonresp = requests.get(jsonloc)
             dictdata = json.loads(jsonresp.text)
-        except:
+        except Exception as e:
+            # ex_type, ex, tb = sys.exec_info()
             logger.critical('Error loading dictionary from url. . .')
-            quit()
+            logger.exception(e)
+            return
     # don't have proper Config paramater based on Command Line argument
     else:
         logger.critical('Config DataSource key must start with url or file')
-        quit()
+        return
 
     # open output file parsedout if command line argument --output is true
     output_file = FileOps(args.output)
-    output_file.openfile(parsed_out)
+    output_file.openfile(PARSED_OUT)
 
     # log call to function to parse the json dictionary
     logger.info('Searching the dictionary for ' + args.last_name)
