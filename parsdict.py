@@ -169,16 +169,17 @@ def main():
     jsonloc = get_json_location(args.input)
     jsondict = load_dictionary(args.input, jsonloc)
 
-    # open output file parsedout if command line argument --output is true
+    # open output file if command line argument --output is true
     output_file = FileOps(args.output)
     output_file.openfile(PARSED_OUT)
 
-    # call recursive function to parse JSON dictionary for my player
-    logger.info('Searching the dictionary for ' + args.last_name)
-    myplayer = parsfunc.dictlevel(jsondict,
-                                  1,
-                                  args.last_name,
-                                  output_file)
+    # call function to extract player data from dictionary and print it
+    logger.info('Searching dictionary for ' + args.last_name)
+
+    myplayer = parsfunc.search_dictionary(jsondict,
+                                          1,
+                                          args.last_name,
+                                          output_file)
 
     print_player_info(myplayer, args.last_name)
 
