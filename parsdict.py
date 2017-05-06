@@ -23,31 +23,34 @@ import argparse
 import configparser
 import logging
 import logging.config
+import sys
 import json
 import requests
 import parsfunc
 
 
 # set logging, config, and output file locations
-logging_ini = '../DataFiles/parsdict_logging.ini'
-config_ini = '../DataFiles/parsdict_config.ini'
-parsed_out = '../DataFiles/dictparsed.txt'
+CONFIG_INI = '../DataFiles/parsdict_config.ini'
+LOGGING_INI = '../DataFiles/parsdict_logging.ini'
+PARSED_OUT = '../DataFiles/dictparsed.txt'
 
-# setup logging
-logging.config.fileConfig(logging_ini)
+# setup logging and log initial message
+logging.config.fileConfig(LOGGING_INI)
 logger = logging.getLogger(__name__)
 logger.info('Executing script: parsdict.py')
 
 
-class file_ops:
+class FileOps:
     """
-    Define open, write, and close methods for class file_ops
-    Command line arg passed to determine if output should be produced
+    File handling routing for dictionary output file
+
+    __init__   sets writeoutput to True/False based on -o command line argument
+    openfile   passed the file location, opens if writeoutput is True
+    writefile  passed the output string, writes record if writeoutput is True
+    closefile  closes file if writeoutput is True
     """
 
-    writeoutput = False
-
-    def outputyesno(self, writeme):
+    def __init__(self, writeme):
         self.writeoutput = writeme
 
     def openfile(self, parsed_output):
@@ -63,10 +66,14 @@ class file_ops:
             self.outfile.close()
 
 
-def parse_arguments():
-    # instantiate an "ArgumentParser" from the argparse module in stdlib
-    # the first argument of the contstructor is the "help"
-    # https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser
+def get_command_arguments():
+    """
+    last_name  required, name of player used to select data
+    input      required, specifies data source, naming pattern url__ or file__
+    output     optional, if provided a file of dictionary elements is created
+                   -o, --output, this is all that needs to be specified if used
+    """
+
     parser = argparse.ArgumentParser('Search Game Data for Player Statistics')
     parser.add_argument(
         help='Player last name',
@@ -87,80 +94,104 @@ def parse_arguments():
         dest='output',
         action='store_true'
     )
-    return parser.parse_args()
 
-
-def main():
-    # get command line arguments
-    args = parse_arguments()
-
+    argue = parser.parse_args()
     # log command line arguments and if optional output file was chosen
-    logger.info('parsdict arguments: ' + args.last_name + ' ' + args.input)
-    if args.output:
-        logger.info('Writing dictionary entries to file ' + parsed_out)
+    logger.info('parsdict arguments: ' + argue.last_name + ' ' + argue.input)
+    if argue.output:
+        logger.info('Writing dictionary entries to file ' + PARSED_OUT)
+
+    return argue
+
+
+def get_json_location(jsonkey):
 
     # get location from config file using command line argument as the key
     config = configparser.ConfigParser()
-    config.read(config_ini)
+    config.read(CONFIG_INI)
 
     # verify input key is in DataSource before setting source location
-    if config.has_option("DataSources", args.input):
-        jsonloc = config.get("DataSources", args.input)
+    if config.has_option("DataSources", jsonkey):
+        return config.get("DataSources", jsonkey)
     else:
-        logger.critical(args.input + ' key missing from config DataSource')
-        quit()
+        logger.critical(jsonkey + ' key missing from config DataSource')
+        return 10
+
+
+def load_dictionary(jsonkey, jsonplace):
 
     # log dictionary location
-    logger.info('Loading dictionary from location: ' + jsonloc)
+    logger.info('Loading dictionary from location: ' + jsonplace)
 
     # get JSON data from file if desired and load into dictionary
-    if args.input[:4] == 'file':
+    if jsonkey[:4] == 'file':
         try:
-            jfile = open(jsonloc, 'r')
+            jfile = open(jsonplace, 'r')
             jdata = jfile.readline()
-            dictdata = json.loads(jdata)
             jfile.close()
-        except:
+            dictdata = json.loads(jdata)
+            return dictdata
+        except Exception as e:
             logger.critical('Error loading dictionary from file. . .')
-            quit()
+            logger.exception(e)
+            return 20
     # get JSON data from url if desired and load into dictionary
-    elif args.input[:3] == 'url':
+    elif jsonkey[:3] == 'url':
         try:
-            jsonresp = requests.get(jsonloc)
+            jsonresp = requests.get(jsonplace)
             dictdata = json.loads(jsonresp.text)
-        except:
+            return dictdata
+        except Exception as e:
+            # ex_type, ex, tb = sys.exec_info()
             logger.critical('Error loading dictionary from url. . .')
-            quit()
+            logger.exception(e)
+            return 30
     # don't have proper Config paramater based on Command Line argument
     else:
         logger.critical('Config DataSource key must start with url or file')
-        quit()
+        return 40
 
-    # open output file parsedout if command line argument --output is true
-    output_file = file_ops()
-    output_file.outputyesno(args.output)
-    output_file.openfile(parsed_out)
 
-    # log call to function to parse the json dictionary
-    logger.info('Searching the dictionary for ' + args.last_name)
+def print_player_info(playerdict, lastname):
 
-    # call recursive function to parse JSON dictionary
-    myplayer = parsfunc.dictlevel(dictdata,
-                                  1,
-                                  args.last_name,
-                                  output_file)
-
-    # get list of keys from returned player data and print header
-    myplayerkeys = list(myplayer.keys())
+    # get list of dictionary keys from returned player data
+    keylist = list(playerdict.keys())
 
     # print heading for player followed by his boxscore data
-    print("Player: " + args.last_name)
-    for dictkey in myplayerkeys:
-        print(dictkey + " = " + str(myplayer[dictkey]))
+    print("Player: " + lastname)
+    for dictkey in keylist:
+        print(dictkey + " = " + str(playerdict[dictkey]))
+
+
+def main():
+
+    args = get_command_arguments()
+
+    jsonloc = get_json_location(args.input)
+    if jsonloc == 10:
+        return jsonloc
+
+    jsondict = load_dictionary(args.input, jsonloc)
+    if jsondict in (20, 30, 40):
+        return jsondict
+
+    # open output file if command line argument --output is true
+    output_file = FileOps(args.output)
+    output_file.openfile(PARSED_OUT)
+
+    # call function to extract player data from dictionary and print it
+    logger.info('Searching dictionary for ' + args.last_name)
+
+    myplayer = parsfunc.search_dictionary(jsondict,
+                                          1,
+                                          args.last_name,
+                                          output_file)
+
+    print_player_info(myplayer, args.last_name)
 
     # close output file (if it was opened)
     output_file.closefile()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
