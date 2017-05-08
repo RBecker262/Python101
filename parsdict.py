@@ -110,12 +110,17 @@ def get_json_location(jsonkey):
     config = configparser.ConfigParser()
     config.read(CONFIG_INI)
 
+    # don't have proper Config paramater based on Command Line argument
+    if jsonkey[:4] != 'file' and jsonkey[:3] != 'url':
+        logger.critical('Config DataSource key must start with url or file')
+        return 10
+
     # verify input key is in DataSource before setting source location
     if config.has_option("DataSources", jsonkey):
         return config.get("DataSources", jsonkey)
     else:
         logger.critical(jsonkey + ' key missing from config DataSource')
-        return 10
+        return 11
 
 
 def load_dictionary(jsonkey, jsonplace):
@@ -145,11 +150,7 @@ def load_dictionary(jsonkey, jsonplace):
             # ex_type, ex, tb = sys.exec_info()
             logger.critical('Error loading dictionary from url. . .')
             logger.exception(e)
-            return 30
-    # don't have proper Config paramater based on Command Line argument
-    else:
-        logger.critical('Config DataSource key must start with url or file')
-        return 40
+            return 21
 
 
 def print_player_info(playerdict, lastname):
@@ -168,11 +169,11 @@ def main():
     args = get_command_arguments()
 
     jsonloc = get_json_location(args.input)
-    if jsonloc == 10:
+    if jsonloc in (10, 11):
         return jsonloc
 
     jsondict = load_dictionary(args.input, jsonloc)
-    if jsondict in (20, 30, 40):
+    if jsondict in (20, 21):
         return jsondict
 
     # open output file if command line argument --output is true
@@ -191,6 +192,8 @@ def main():
 
     # close output file (if it was opened)
     output_file.closefile()
+
+    return 0
 
 
 if __name__ == '__main__':
