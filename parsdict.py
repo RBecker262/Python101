@@ -30,8 +30,8 @@ import parsfunc
 
 
 # set logging, config, and output file locations
-CONFIG_INI = '../DataFiles/parsdict_config.ini'
-LOGGING_INI = '../DataFiles/parsdict_logging.ini'
+CONFIG_INI = 'parsdict_config.ini'
+LOGGING_INI = 'parsdict_logging.ini'
 PARSED_OUT = '../DataFiles/dictparsed.txt'
 
 # setup logging and log initial message
