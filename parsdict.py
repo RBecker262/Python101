@@ -117,7 +117,7 @@ def get_config_file(config_default, opt_config=None):
 
     config = configparser.ConfigParser()
 
-    # override global variable if optional config location passed
+    # override config location if optional command line argument specified
     if opt_config:
         configini = opt_config
     else:
@@ -125,6 +125,7 @@ def get_config_file(config_default, opt_config=None):
 
     logger.info('Config file location = ' + configini)
 
+    # open config file to verify existence, then read and return
     try:
         config.read_file(open(configini))
         config.read(configini)
