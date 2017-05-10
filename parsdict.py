@@ -72,6 +72,7 @@ def get_command_arguments():
     input      required, specifies data source, naming pattern url__ or file__
     output     optional, if provided a file of dictionary elements is created
                    -o, --output, this is all that needs to be specified if used
+    config     optional, if provided will serve as the config.ini location
     """
 
     parser = argparse.ArgumentParser('Search Game Data for Player Statistics')
@@ -94,8 +95,16 @@ def get_command_arguments():
         dest='output',
         action='store_true'
     )
+    parser.add_argument(
+        '-c,'
+        '--config',
+        help='Config file location',
+        dest='config',
+        type=str
+    )
 
     argue = parser.parse_args()
+
     # log command line arguments and if optional output file was chosen
     logger.info('parsdict arguments: ' + argue.last_name + ' ' + argue.input)
     if argue.output:
@@ -104,11 +113,30 @@ def get_command_arguments():
     return argue
 
 
-def get_json_location(jsonkey):
+def get_config_file(config_default, opt_config=None):
 
-    # get location from config file using command line argument as the key
     config = configparser.ConfigParser()
-    config.read(CONFIG_INI)
+
+    # override config location if optional command line argument specified
+    if opt_config:
+        configini = opt_config
+    else:
+        configini = config_default
+
+    logger.info('Config file location = ' + configini)
+
+    # open config file to verify existence, then read and return
+    try:
+        config.read_file(open(configini))
+        config.read(configini)
+        return config
+    except Exception as e:
+        logger.critical('Error loading configuration file. . .')
+        logger.exception(e)
+        return 1
+
+
+def get_json_location(jsonkey, config):
 
     # don't have proper Config paramater based on Command Line argument
     if jsonkey[:4] != 'file' and jsonkey[:3] != 'url':
@@ -168,7 +196,11 @@ def main():
 
     args = get_command_arguments()
 
-    jsonloc = get_json_location(args.input)
+    configdata = get_config_file(CONFIG_INI, args.config)
+    if configdata == 1:
+        return configdata
+
+    jsonloc = get_json_location(args.input, configdata)
     if jsonloc in (10, 11):
         return jsonloc
 
