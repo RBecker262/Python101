@@ -40,11 +40,19 @@ logger = logging.getLogger(__name__)
 logger.info('Executing script: parsdict.py')
 
 
+class ConfigLoadError(ValueError):
+    pass
+
+
 class JsonLocationKeyError(ValueError):
     pass
 
 
 class JsonKeyMissingError(ValueError):
+    pass
+
+
+class LoadDictionaryError(ValueError):
     pass
 
 
@@ -139,9 +147,10 @@ def get_config_file(config_default, opt_config=None):
         config.read(configini)
         return config
     except Exception as e:
-        logger.critical('Error loading configuration file. . .')
+        errmsg = 'Error loading Configuration file. . .'
+        logger.critical(errmsg)
         logger.exception(e)
-        return 1
+        raise ConfigLoadError(errmsg)
 
 
 def get_json_location(jsonkey, config):
@@ -175,9 +184,10 @@ def load_dictionary(jsonkey, jsonplace):
             dictdata = json.loads(jdata)
             return dictdata
         except Exception as e:
-            logger.critical('Error loading dictionary from file. . .')
+            errmsg = 'Error loading dictionary from file. . .'
+            logger.critical(errmsg)
             logger.exception(e)
-            return 20
+            raise LoadDictionaryError(errmsg)
     # get JSON data from url if desired and load into dictionary
     elif jsonkey[:3] == 'url':
         try:
@@ -185,10 +195,10 @@ def load_dictionary(jsonkey, jsonplace):
             dictdata = json.loads(jsonresp.text)
             return dictdata
         except Exception as e:
-            # ex_type, ex, tb = sys.exec_info()
-            logger.critical('Error loading dictionary from url. . .')
+            errmsg = 'Error loading dictionary from url. . .'
+            logger.critical(errmsg)
             logger.exception(e)
-            return 21
+            raise LoadDictionaryError(errmsg)
 
 
 def print_player_info(playerdict, lastname):
@@ -206,10 +216,13 @@ def main():
 
     args = get_command_arguments()
 
-    configdata = get_config_file(CONFIG_INI, args.config)
-    if configdata == 1:
-        return configdata
+    # load config file into memory
+    try:
+        configdata = get_config_file(CONFIG_INI, args.config)
+    except ConfigLoadError:
+        return 1
 
+    # get json dictionary information from config file
     try:
         jsonloc = get_json_location(args.input, configdata)
     except JsonLocationKeyError:
@@ -217,9 +230,11 @@ def main():
     except JsonKeyMissingError:
         return 11
 
-    jsondict = load_dictionary(args.input, jsonloc)
-    if jsondict in (20, 21):
-        return jsondict
+    # load json dictionary into memory
+    try:
+        jsondict = load_dictionary(args.input, jsonloc)
+    except LoadDictionaryError:
+        return 20
 
     # open output file if command line argument --output is true
     output_file = FileOps(args.output)
@@ -242,4 +257,6 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    cc = main()
+    logger.info('parsdict.py completion code: ' + str(cc))
+    sys.exit(cc)
