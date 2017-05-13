@@ -40,6 +40,14 @@ logger = logging.getLogger(__name__)
 logger.info('Executing script: parsdict.py')
 
 
+class JsonLocationKeyError(ValueError):
+    pass
+
+
+class JsonKeyMissingError(ValueError):
+    pass
+
+
 class FileOps:
     """
     File handling routing for dictionary output file
@@ -140,15 +148,17 @@ def get_json_location(jsonkey, config):
 
     # don't have proper Config paramater based on Command Line argument
     if jsonkey[:4] != 'file' and jsonkey[:3] != 'url':
-        logger.critical('Config DataSource key must start with url or file')
-        return 10
+        errmsg = 'Config DataSource key must start with url or file'
+        logger.critical(errmsg)
+        raise JsonLocationKeyError(errmsg)
 
     # verify input key is in DataSource before setting source location
     if config.has_option("DataSources", jsonkey):
         return config.get("DataSources", jsonkey)
     else:
-        logger.critical(jsonkey + ' key missing from config DataSource')
-        return 11
+        errmsg = jsonkey + ' key missing from config DataSource'
+        logger.critical(errmsg)
+        raise JsonKeyMissingError(errmsg)
 
 
 def load_dictionary(jsonkey, jsonplace):
@@ -200,9 +210,12 @@ def main():
     if configdata == 1:
         return configdata
 
-    jsonloc = get_json_location(args.input, configdata)
-    if jsonloc in (10, 11):
-        return jsonloc
+    try:
+        jsonloc = get_json_location(args.input, configdata)
+    except JsonLocationKeyError:
+        return 10
+    except JsonKeyMissingError:
+        return 11
 
     jsondict = load_dictionary(args.input, jsonloc)
     if jsondict in (20, 21):
